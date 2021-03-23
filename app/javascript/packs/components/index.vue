@@ -3,10 +3,10 @@
     <!-- 新規作成フォーム -->
     <div class="row">
       <div class="col s10 m11">
-        <input class="from-control" placeholder="Add your task">
+        <input v-model="newTask" class="from-control" placeholder="新規タスクを追加">
       </div>
       <div class="col s2 m1">
-        <div class="btn-floating waves-effect waves-light red">
+        <div v-on:click="createTask" class="btn-floating waves-effect waves-light red">
           <i class="material-icons">add</i>
         </div>
       </div>
@@ -16,7 +16,7 @@
     <div>
       <ul class="collection">
          <li v-for="task in tasks" v-if="!task.is_done" v-bind:id="'row_task_' + task.id" class="collection-item" :key='task'>
-          <input type="checkbox" v-vind:id="'task_' + task.id" />
+          <input type="button" v-on:click="doneTask(task.id)" v-bind:id="'task_' + task.id" />
           <label v-bind:for="'task_' + task.id">{{task.name}}</label>
         </li>
       </ul>
@@ -63,6 +63,25 @@
       },
       displayFinishedTasks: function() {
         document.querySelector('#finished-tasks').classList.toggle('display_none');
+      },
+      createTask: function() {
+        if (!this.newTask) return;
+
+        axios.post('/api/tasks', { task: { name: this.newTask } }).then((response) => {
+          this.tasks.unshift(response.data.task);
+          this.newTask = "";
+        }, (error) => {
+          console.log(error);
+        });
+      },
+      doneTask: function (task_id) {
+        axios.put('/api/tasks/' + task_id, { task: { is_done: 1 }}).then((response) => {
+          // this.moveFinishedTask(task_id);
+          // タスク完了のupdate実行後画面リロード
+          this.$router.go({path: this.$router.currentRoute.path, force: true})
+        }, (error) => {
+          console.log(error);
+        });
       },
     }
   }
