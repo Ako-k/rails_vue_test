@@ -16,8 +16,10 @@
     <div>
       <ul class="collection">
          <li v-for="task in tasks" v-if="!task.is_done" v-bind:id="'row_task_' + task.id" class="collection-item" :key='task'>
-          <input type="button" v-on:click="doneTask(task.id)" v-bind:id="'task_' + task.id" />
-          <label v-bind:for="'task_' + task.id">{{task.name}}</label>
+          <label v-bind:for="'task_' + task.id">
+            <input type="checkbox" v-on:click="doneTask(task.id)" v-bind:id="'task_' + task.id" />
+            <span>{{ task.name }}</span>
+          </label>
         </li>
       </ul>
     </div>
@@ -29,8 +31,11 @@
     <div id="finished-tasks" class="display_none">
       <ul class="collection">
         <li v-for="task in tasks" v-if="task.is_done" v-bind:id="'row_task_' + task.id" class="collection-item" :key='task'>
-          <input type="checkbox" v-bind:id="'task_' + task.id" checked="checked" />
-          <label v-bind:for="'task_' + task.id"  class="line-through">{{ task.name }}</label>
+          <label v-bind:for="'task_' + task.id">
+            <input type="checkbox" v-bind:id="'task_' + task.id" checked="checked" />
+            <span class="line-through">{{ task.name }}</span>
+          </label>
+          <div class="btn red darken-1" v-on:click="deleteTask(task.id)">削除</div>
         </li>
       </ul>
     </div>
@@ -77,6 +82,14 @@
       doneTask: function (task_id) {
         axios.put('/api/tasks/' + task_id, { task: { is_done: 1 }}).then((response) => {
           // this.moveFinishedTask(task_id);
+          // タスク完了のupdate実行後画面リロード
+          this.$router.go({path: this.$router.currentRoute.path, force: true})
+        }, (error) => {
+          console.log(error);
+        });
+      },
+      deleteTask: function (task_id) {
+        axios.delete('/api/tasks/' + task_id).then((response) => {
           // タスク完了のupdate実行後画面リロード
           this.$router.go({path: this.$router.currentRoute.path, force: true})
         }, (error) => {
